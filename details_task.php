@@ -1,3 +1,25 @@
+<?php
+
+require_once 'classes/connect_DB.php';
+require_once 'classes/User.php';
+require_once 'classes/task.php';
+require_once 'classes/task_bug.php';
+
+
+$db = new Database();
+$pdo = $db->connect();
+$task = new Task($pdo);
+
+$id_tache = $_SESSION['id_tache'];
+
+$tache = $task->showDetailsTask($id_tache);
+
+
+
+
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -89,7 +111,7 @@
         </section>
     </div>
 
-    <a href="home.html"
+    <a href="home.php"
         class="absolute top-1 left-1 inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-lg border-2 py-2 px-4 border-blue-500 rounded-lg">
         &#10092;&#10092;
     </a>
@@ -103,13 +125,13 @@
         <div class="space-y-4">
             <div>
                 <h3 class="font-medium text-gray-700">Titre</h3>
-                <p class="text-sm text-gray-600">Corriger le bug d'affichage</p>
+                <p class="text-sm text-gray-600"><?php echo $tache["title"] ?></p>
             </div>
 
             <div>
                 <h3 class="font-medium text-gray-700">Description</h3>
                 <p class="text-sm text-gray-600">
-                    Il y a un problème d'affichage sur la page d'accueil, il faut ajuster le CSS et tester les rendus.
+                    <?php echo $tache["description"] ?>
                 </p>
             </div>
 
@@ -125,9 +147,23 @@
                 <div class="w-1/2 max-sm:w-full">
                     <h3 class="font-medium text-gray-700">Statut</h3>
                     <p class="text-sm text-gray-600">
-                        <span
-                            class="inline-block py-1 px-3 text-sm font-semibold text-green-800 bg-green-200 rounded-full">En
-                            Cours</span>
+                        <?php if ($tache["status"] === "A faire") : ?>
+                            <span
+                                class="inline-block py-1 px-3 text-sm font-semibold text-green-800 bg-green-200 rounded-full">
+                                <?php echo $tache["status"] ?>
+                            </span>
+                        <?php elseif ($tache["status"] === "Fini") : ?>
+                            <span
+                                class="inline-block py-1 px-3 text-sm font-semibold text-orange-800 bg-orange-200 rounded-full">
+                                <?php echo $tache["status"] ?>
+                            </span>
+                        <?php elseif ($tache["status"] === "En cours") : ?>
+                            <span
+                                class="inline-block py-1 px-3 text-sm font-semibold text-blue-800 bg-blue-200 rounded-full">
+                                <?php echo $tache["status"] ?>
+                            </span>
+                        <?php endif; ?>
+
                     </p>
                 </div>
             </div>
@@ -135,24 +171,24 @@
 
                 <div class="w-1/2 max-sm:w-full">
                     <h3 class="font-medium text-gray-700">Créée par</h3>
-                    <p class="text-sm text-gray-600">Alice Dupont</p>
+                    <p class="text-sm text-gray-600"><?php echo $tache["id_user_create"] ?></p>
                 </div>
 
                 <div class="w-1/2 max-sm:w-full">
                     <h3 class="font-medium text-gray-700">Assigné à</h3>
-                    <p class="text-sm text-gray-600">John Doe</p>
+                    <p class="text-sm text-gray-600"><?php echo $tache["id_user_assignee"] ?></p>
                 </div>
             </div>
 
             <div class="w-full flex flex-row max-sm:flex-col gap-2 ">
                 <div class="w-1/2 max-sm:w-full">
                     <h3 class="font-medium text-gray-700">Date de Création</h3>
-                    <p class="text-sm text-gray-600">12 Décembre 2024</p>
+                    <p class="text-sm text-gray-600"><?php echo $tache["date_create"] ?></p>
                 </div>
 
                 <div class="w-1/2 max-sm:w-full">
                     <h3 class="font-medium text-gray-700">Date de Délai</h3>
-                    <p class="text-sm text-gray-600">20 Décembre 2024</p>
+                    <p class="text-sm text-gray-600"><?php echo $tache["date_fin"] ?></p>
                 </div>
 
             </div>
