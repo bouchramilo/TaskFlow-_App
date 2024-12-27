@@ -103,16 +103,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_tache_afficher']))
                     <!-- Titre -->
                     <div>
                         <label for="title" class="font-medium text-gray-700">Titre</label>
-                        <input type="text" id="title" name="title" value="Corriger le bug d'affichage"
+                        <input type="text" id="title" name="title" value=""
                             class=" block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
 
                     <!-- Description -->
                     <div>
                         <label for="description" class="font-medium text-gray-700">Description</label>
-                        <textarea id="description" name="description" rows="4"
+                        <textarea id="description" name="description" 
                             class=" block w-full px-4 py-2 resize-none h-16 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            Il y a un problème d'affichage sur la page d'accueil, il faut ajuster le CSS et tester les rendus.
                         </textarea>
                     </div>
 

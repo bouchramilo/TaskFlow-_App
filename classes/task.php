@@ -47,7 +47,14 @@ class Task
     {
         try {
             $sql = "SELECT 
-                t.*,
+                t.id_task,
+                t.title,
+                t.description,
+                t.id_user_create,
+                t.id_user_assignee,
+                t.status,
+                DATE_FORMAT(t.date_fin, '%d/%m/%Y') as date_fin,
+                DATE_FORMAT(t.date_create, '%d/%m/%Y') as date_create,
                 tf.priority,
                 tb.gravite,
                 concat(uc.first_name , ' ' , uc.last_name) AS creator_name,
@@ -77,7 +84,14 @@ class Task
         try {
             $sql = "
             SELECT 
-                t.*,
+                t.id_task,
+                t.title,
+                t.description,
+                t.id_user_create,
+                t.id_user_assignee,
+                t.status,
+                DATE_FORMAT(t.date_fin, '%d/%m/%Y') as date_fin,
+                DATE_FORMAT(t.date_create, '%d/%m/%Y') as date_create,
                 tf.priority,
                 tb.gravite,
                 concat(uc.first_name , ' ' , uc.last_name) AS creator_name,
@@ -111,6 +125,42 @@ class Task
             echo "Erreur de récupération deletedeletedeletedeletedelete : " . $e->getMessage();
         }
     }
+
+    public function updateTask(int $id_task_update, string $title, string $description, string $task_type, string $status, int $assigned_to, string $due_date){
+    try {
+        $sql = "UPDATE Task 
+                SET title = :title, 
+                    description = :description, 
+                    id_user_assignee = :id_user_assignee, 
+                    status = :status, 
+                    date_fin = :due_date 
+                WHERE id_task = :id_task_update";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':title' => $title,
+            ':description' => $description,
+            ':id_user_assignee' => $assigned_to,
+            ':status' => $status,
+            ':due_date' => $due_date,
+            ':id_task_update' => $id_task_update
+        ]);
+
+        if ($stmt->rowCount() > 0) {
+            return true; // Succès
+        } else {
+            // Afficher une erreur si aucune ligne n'est affectée
+            echo "Aucune mise à jour effectuée.";
+            print_r($stmt->errorInfo());
+            return false;
+        }
+    } catch (PDOException $e) {
+        // Gestion des erreurs PDO
+        echo "Erreur lors de la mise à jour : " . $e->getMessage();
+        return false;
+    }
+}
+
+
 }
 
 

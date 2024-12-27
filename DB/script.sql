@@ -42,10 +42,7 @@ CREATE TABLE Task_bug (
 
 
 -- Gestion des tables : Les requêtes : +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-insert into User(id_user, first_name, last_name) values (1, 'Jean', 'Dupont');
--- suppression des donnees ;
 
-delete from User where id_user >= 1;
 
 
 SELECT 
@@ -55,7 +52,7 @@ SELECT
                 FROM Task t
                 LEFT JOIN Task_feature tf ON t.id_task = tf.id_task
                 LEFT JOIN Task_bug tb ON t.id_task = tb.id_task
-                WHERE t.id_task = 4;
+                WHERE t.id_task = 20;
 
 
 
@@ -93,7 +90,8 @@ call afficherTable();
 
 
 
-drop table Task_bug; 
-drop table Task_feature; 
-drop table Task; 
-drop table User; 
+-- suppression des donnees ;
+-- drop table Task_bug; 
+-- drop table Task_feature; 
+-- drop table Task; 
+-- drop table User; 

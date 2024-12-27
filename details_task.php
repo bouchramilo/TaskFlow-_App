@@ -14,11 +14,38 @@ $id_tache = $_SESSION['id_tache'];
 
 $tache = $task->showDetailsTask($id_tache);
 
-
+// delete task +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['task_delete'])) {
     $id_task_delete = htmlspecialchars(trim($_POST['id_task_delete']));
     $tache = $task->deleteTask($id_task_delete);
 }
+
+
+
+
+//  update task ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_task'])) {
+    // Récupérer et valider les données
+    $id_task_update = intval(htmlspecialchars(trim($_POST['id_task_update'])));
+    $title = htmlspecialchars(trim($_POST['title']));
+    $description = htmlspecialchars(trim($_POST['description']));
+    $task_type = htmlspecialchars(trim($_POST['task_type']));
+    $status = htmlspecialchars(trim($_POST['status']));
+    $assigned_to = intval(htmlspecialchars(trim($_POST['assigned_to'])));
+    $due_date = htmlspecialchars(trim($_POST['due_date']));
+
+    // Afficher les données pour débogage
+    var_dump($id_task_update, $title, $description, $task_type, $status, $assigned_to, $due_date);
+
+    if ($task->updateTask($id_task_update, $title, $description, $task_type, $status, $assigned_to, $due_date)) {
+        echo "Tâche mise à jour avec succès.";
+        header('Location: details_task.php');
+    } else {
+        echo "Erreur lors de la mise à jour de la tâche.";
+    }
+}
+
+
 
 
 
@@ -51,17 +78,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['task_delete'])) {
                     <!-- Titre -->
                     <div>
                         <label for="title" class="font-medium text-gray-700">Titre</label>
-                        <input type="text" id="title" name="title" value="Corriger le bug d'affichage"
+                        <input type="text" id="title" name="title" value="<?= $tache['title'];?>"
                             class=" block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
 
                     <!-- Description -->
                     <div>
                         <label for="description" class="font-medium text-gray-700">Description</label>
-                        <textarea id="description" name="description" rows="4"
-                            class=" block w-full px-4 py-2 resize-none h-16 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    Il y a un problème d'affichage sur la page d'accueil, il faut ajuster le CSS et tester les rendus.
-                </textarea>
+                        <textarea id="description" name="description" rows="4" class=" block w-full px-4 py-2 resize-none h-16 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <?= trim($tache['description']);?>
+                        </textarea>
                     </div>
 
                     <!-- Type de Tâche -->
@@ -101,9 +127,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['task_delete'])) {
                             <label for="status" class="font-medium text-gray-700">Statut</label>
                             <select id="status" name="status"
                                 class=" block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="en_cours" selected>En Cours</option>
-                                <option value="a_faire">À Faire</option>
-                                <option value="termine">Terminé</option>
+                                <option value="En cours" selected>En Cours</option>
+                                <option value="A faire">À Faire</option>
+                                <option value="Fini">Terminé</option>
                             </select>
                         </div>
                     </div>
@@ -128,16 +154,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['task_delete'])) {
                         <!-- Date de Délai -->
                         <div class="w-1/2 max-sm:w-full">
                             <label for="due_date" class="font-medium text-gray-700">Date de Délai</label>
-                            <input type="date" id="due_date" name="due_date" value="2024-12-20"
+                            <input type="date" id="due_date" name="due_date" value="<?= $tache['date_fin']; ?>"
                                 class=" block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                     </div>
 
                     <!-- Actions -->
                     <div class="mt-6 flex space-x-4 flex justify-end">
-                        <button type="submit"
-                            class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition">Sauvegarder
-                        </button>
+                        <form action="" method="post">
+                            <input type="hidden" name="id_task_update" value="<?= $tache["id_task"] ?>">
+                            <button name="update_task"
+                                class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition">Sauvegarder
+                            </button>
+                        </form>
                         <button type="button"
                             class="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition">Annuler</button>
                     </div>
@@ -178,10 +207,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['task_delete'])) {
                             <span class="inline-block py-1 px-3 text-sm font-semibold text-red-800 bg-red-200 rounded-full">
                                 <?php echo $_SESSION['type_tache'] ?>
                             </span>
+                            <span class="inline-block py-1 px-3 text-sm font-semibold text-red-800 bg-red-200 rounded-full">
+                                <?php echo $tache['gravite'] ?>
+                            </span>
                         <?php elseif ($_SESSION['type_tache'] === "Feature"): ?>
                             <span class="inline-block py-1 px-3 text-sm font-semibold text-green-800 bg-green-200 rounded-full">
                                 <?php echo $_SESSION['type_tache'] ?>
                             </span>
+                            <span class="inline-block py-1 px-3 text-sm font-semibold text-green-800 bg-green-200 rounded-full">
+                                <?php echo $tache['priority'] ?>
+                            </span>
+
                         <?php else : ?>
                             <span class="inline-block py-1 px-3 text-sm font-semibold text-blue-800 bg-blue-200 rounded-full">
                                 <?php echo $_SESSION['type_tache'] ?>
