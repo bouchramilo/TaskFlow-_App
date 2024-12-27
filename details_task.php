@@ -15,6 +15,11 @@ $id_tache = $_SESSION['id_tache'];
 $tache = $task->showDetailsTask($id_tache);
 
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['task_delete'])) {
+    $id_task_delete = htmlspecialchars(trim($_POST['id_task_delete']));
+    $tache = $task->deleteTask($id_task_delete);
+}
+
 
 
 
@@ -65,12 +70,32 @@ $tache = $task->showDetailsTask($id_tache);
                             <label for="task_type" class="font-medium text-gray-700">Type de Tâche</label>
                             <select id="task_type" name="task_type"
                                 class=" block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="bug" selected>Bug</option>
+                                <option value="simple" selected>Simple</option>
+                                <option value="bug">Bug</option>
                                 <option value="feature">Feature</option>
-                                <option value="simple">Simple</option>
+                            </select>
+                        </div>
+                        <!-- start partie cacher  -->
+                        <div class="inputGravite w-1/2 max-sm:w-full hidden">
+                            <label for="task_type" class="font-medium text-gray-700">Gravité : </label>
+                            <select id="bug_gravite" name="gravite"
+                                class=" block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="urgent" selected>Urgent</option>
+                                <option value="moyen">Moyen</option>
+                                <option value="nonUrgent">Non urgent</option>
                             </select>
                         </div>
 
+                        <div class="inputPriority w-1/2 max-sm:w-full hidden">
+                            <label for="task_type" class="font-medium text-gray-700">Priorité : </label>
+                            <select id="feature_priority" name="priority"
+                                class=" block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="elevee" selected>elevée</option>
+                                <option value="moyenne">Moyenne</option>
+                                <option value="faible">Faible</option>
+                            </select>
+                        </div>
+                        <!-- end partie cacher  -->
                         <!-- Statut -->
                         <div class="w-1/2 max-sm:w-full">
                             <label for="status" class="font-medium text-gray-700">Statut</label>
@@ -83,12 +108,22 @@ $tache = $task->showDetailsTask($id_tache);
                         </div>
                     </div>
 
+                    <?php
+                    // Afficher tous les utilisateurs
+                    $userManager = new User($pdo);
+                    $users = $userManager->getAllUsers();
+                    ?>
+
                     <!-- Assigné à -->
                     <div class="w-full flex flex-row max-sm:flex-col gap-2 ">
                         <div class="w-1/2 max-sm:w-full">
                             <label for="assigned_to" class="font-medium text-gray-700">Assigné à</label>
-                            <input type="text" id="assigned_to" name="assigned_to" value="John Doe"
+                            <select id="status" name="assigned_to"
                                 class=" block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <?php foreach ($users as $user): ?>
+                                    <option value="<?= $user['id_user'] ?>" selected><?= $user['last_name'] . ' ' . $user['first_name'] ?></option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
                         <!-- Date de Délai -->
                         <div class="w-1/2 max-sm:w-full">
@@ -139,8 +174,19 @@ $tache = $task->showDetailsTask($id_tache);
                 <div class="w-1/2 max-sm:w-full">
                     <h3 class="font-medium text-gray-700">Type de Tâche</h3>
                     <p class="text-sm text-gray-600">
-                        <span
-                            class="inline-block py-1 px-3 text-sm font-semibold text-blue-800 bg-blue-200 rounded-full">Bug</span>
+                        <?php if ($_SESSION['type_tache'] === "Bug"): ?>
+                            <span class="inline-block py-1 px-3 text-sm font-semibold text-red-800 bg-red-200 rounded-full">
+                                <?php echo $_SESSION['type_tache'] ?>
+                            </span>
+                        <?php elseif ($_SESSION['type_tache'] === "Feature"): ?>
+                            <span class="inline-block py-1 px-3 text-sm font-semibold text-green-800 bg-green-200 rounded-full">
+                                <?php echo $_SESSION['type_tache'] ?>
+                            </span>
+                        <?php else : ?>
+                            <span class="inline-block py-1 px-3 text-sm font-semibold text-blue-800 bg-blue-200 rounded-full">
+                                <?php echo $_SESSION['type_tache'] ?>
+                            </span>
+                        <?php endif ?>
                     </p>
                 </div>
 
@@ -152,14 +198,14 @@ $tache = $task->showDetailsTask($id_tache);
                                 class="inline-block py-1 px-3 text-sm font-semibold text-green-800 bg-green-200 rounded-full">
                                 <?php echo $tache["status"] ?>
                             </span>
-                        <?php elseif ($tache["status"] === "Fini") : ?>
-                            <span
-                                class="inline-block py-1 px-3 text-sm font-semibold text-orange-800 bg-orange-200 rounded-full">
-                                <?php echo $tache["status"] ?>
-                            </span>
                         <?php elseif ($tache["status"] === "En cours") : ?>
                             <span
                                 class="inline-block py-1 px-3 text-sm font-semibold text-blue-800 bg-blue-200 rounded-full">
+                                <?php echo $tache["status"] ?>
+                            </span>
+                        <?php else : ?>
+                            <span
+                                class="inline-block py-1 px-3 text-sm font-semibold text-orange-800 bg-orange-200 rounded-full">
                                 <?php echo $tache["status"] ?>
                             </span>
                         <?php endif; ?>
@@ -171,12 +217,12 @@ $tache = $task->showDetailsTask($id_tache);
 
                 <div class="w-1/2 max-sm:w-full">
                     <h3 class="font-medium text-gray-700">Créée par</h3>
-                    <p class="text-sm text-gray-600"><?php echo $tache["id_user_create"] ?></p>
+                    <p class="text-sm text-gray-600"><?php echo $tache["creator_name"] ?></p>
                 </div>
 
                 <div class="w-1/2 max-sm:w-full">
                     <h3 class="font-medium text-gray-700">Assigné à</h3>
-                    <p class="text-sm text-gray-600"><?php echo $tache["id_user_assignee"] ?></p>
+                    <p class="text-sm text-gray-600"><?php echo $tache["assignee_name"] ?></p>
                 </div>
             </div>
 
@@ -199,13 +245,17 @@ $tache = $task->showDetailsTask($id_tache);
         <div class="mt-6 flex space-x-4">
             <button id="showFormButton"
                 class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition">Modifier</button>
-            <button class="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition">Supprimer</button>
+            <form action="" method="post">
+                <input type="hidden" name="id_task_delete" value="<?= $tache["id_task"] ?>">
+                <button name="task_delete" class="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition">Supprimer</button>
+            </form>
         </div>
     </section>
 
 
-
 </body>
 <script src="js/ajouterForm.js"></script>
+<script src="js/type_task.js"></script>
+
 
 </html>

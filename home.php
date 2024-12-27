@@ -24,20 +24,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_task_btn'])) {
     if ($taskId !== false) { // Vérification que l'insertion de la tâche principale a réussi
         if ($task_type === "bug") {
             $taskBug = new TaskBug($pdo);
-            if ($taskBug->addBug($taskId, "urgent")) { // $gravite doit être récupérée du formulaire
-                echo "Bug ajouté avec succès !";
+            $gravite = htmlspecialchars(trim($_POST['gravite']));
+            if ($taskBug->addBug($taskId, $gravite)) { // $gravite doit être récupérée du formulaire
+                // echo "Bug ajouté avec succès !";
             } else {
                 echo "Erreur lors de l'ajout du bug.";
             }
         } elseif ($task_type === "feature") {
             $taskFeature = new TaskFeature($pdo);
-            if ($taskFeature->addFeature($taskId, "moyenne")) { // $priority doit être récupérée du formulaire
-                echo "Feature ajoutée avec succès !";
+            $priority = htmlspecialchars(trim($_POST['priority']));
+            if ($taskFeature->addFeature($taskId, $priority)) { // $priority doit être récupérée du formulaire
+                // echo "Feature ajoutée avec succès !";
             } else {
                 echo "Erreur lors de l'ajout de la feature.";
             }
         } else {
-            echo "task ajouter avec succes";
+            // echo "task ajouter avec succes";
         }
     } else {
         echo "Erreur lors de l'ajout de la tâche.";
@@ -47,11 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_task_btn'])) {
 ?>
 
 <?php
-// require_once 'classes/connect_DB.php';
-// require_once 'classes/User.php';
-
-$db = new Database();
-$pdo = $db->connect();
 
 $userManager = new User($pdo);
 
@@ -65,20 +62,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['annulerAdd'])) {
 }
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_tache_afficher'])) {
     $_SESSION['id_tache'] = htmlspecialchars(trim($_POST['id_tache']));
+    $_SESSION['type_tache'] = htmlspecialchars(trim($_POST['type_tache']));
+
     echo $_SESSION['id_tache'];
+
     header('Location: details_task.php');
 }
 
 
 
 ?>
-
-
-
-
-
-
-
 
 
 
@@ -127,13 +120,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_tache_afficher']))
                     <div class="w-full flex flex-row max-sm:flex-col gap-2 ">
                         <div class="w-1/2 max-sm:w-full">
                             <label for="task_type" class="font-medium text-gray-700">Type de Tâche</label>
-                            <select id="task_type" name="task_type"
+                            <select id="task_type" name="task_type" 
                                 class=" block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="bug" selected>Bug</option>
+                                <option value="simple"selected>Simple</option>
+                                <option value="bug" >Bug</option>
                                 <option value="feature">Feature</option>
-                                <option value="simple">Simple</option>
                             </select>
                         </div>
+                        <!-- start partie cacher  -->
+                        <div class="inputGravite w-1/2 max-sm:w-full hidden">
+                            <label for="task_type" class="font-medium text-gray-700">Gravité : </label>
+                            <select id="bug_gravite" name="gravite"
+                                class=" block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="urgent" selected>Urgent</option>
+                                <option value="moyen">Moyen</option>
+                                <option value="nonUrgent">Non urgent</option>
+                            </select>
+                        </div>
+
+                        <div class="inputPriority w-1/2 max-sm:w-full hidden">
+                            <label for="task_type" class="font-medium text-gray-700">Priorité : </label>
+                            <select id="feature_priority" name="priority"
+                                class=" block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="elevee" selected>elevée</option>
+                                <option value="moyenne">Moyenne</option>
+                                <option value="faible">Faible</option>
+                            </select>
+                        </div>
+                        <!-- end partie cacher  -->
 
                         <!-- Statut -->
                         <div class="w-1/2 max-sm:w-full">
@@ -183,9 +197,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_tache_afficher']))
         </section>
     </div>
 
-
-    <!-- Les taches -->
-
     <section class="w-[95%] h-max flex flex-row justify-end max-sm:flex-col gap-2 py-2">
 
         <div class="w-full flex justify-start ">
@@ -213,6 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_tache_afficher']))
         </button>
     </section>
 
+    <!-- Les taches ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
     <?php
     // Afficher tous les utilisateurs
     $tasks = $task->getAllTasks();
@@ -222,15 +234,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_tache_afficher']))
         <!-- en attente -->
         <div class="w-1/3 h-max max-sm:w-full bg-gray-200 border-none rounded-xl p-2">
             <h2 class="text-xl font-semibold text-gray-700 mb-4 pl-4">En attente</h2>
-            <?php foreach ($tasks as $tache): ?>
-                <?php if ($tache['status'] == "A faire"): ?>
-                    <div class="task text-sm bg-blue-100 border-l-4 border-blue-500 rounded-md p-4 mb-4">
-                        <h3 class="text-blue-500 font-semibold">Tâche Générale</h3>
-                        <p><?= $tache['title'] ?></p>
-                        <span class="text-gray-500 text-sm"><?= $tache['status'] ?></span>
-                        <p class="text-sm text-gray-500">Assignée à : <span class="font-bold"><?= $tache['id_user_assignee'] ?></span></p>
-                        <form action="" method="post"><input type="hidden" name="id_tache" value="<?= $tache['id_task'] ?>"><button name="id_tache_afficher" class="text-xs">plus info</button></form>
-                    </div>
+            <?php foreach ($tasks as $task): ?>
+                <?php if ($task['status'] === "A faire"): ?>
+
+                    <?php if (!empty($task['priority']) && in_array($task['priority'], ['faible', 'moyenne', 'elevee'])): ?>
+
+                        <div class="task text-sm bg-green-100 border-l-4 border-green-500 rounded-md p-4 mb-4">
+                            <h3 class="text-green-600 font-semibold">Feature</h3>
+                            <p><?= htmlspecialchars($task['title'], ENT_QUOTES) ?></p>
+                            <span class="text-gray-500 text-sm">Priorité : <?= $task['priority'] ?></span>
+                            <p class="text-sm text-gray-500">Créer par : <span class="font-bold"><?= htmlspecialchars($task['creator_name'], ENT_QUOTES) ?></span></p>
+                            <p class="text-sm text-gray-500">Assignée à : <span class="font-bold"><?= htmlspecialchars($task['assignee_name'], ENT_QUOTES) ?></span></p>
+                            <span class="text-gray-500 text-sm">Date délai : <?= $task['date_fin'] ?? 'Non spécifiée' ?></span>
+                            <form action="" method="post" class="w-full h-6 flex justify-end">
+                                <input type="hidden" name="id_tache" value="<?= htmlspecialchars($task['id_task'], ENT_QUOTES) ?>">
+                                <input type="hidden" name="type_tache" value="Feature">
+                                <button name="id_tache_afficher" class="text-xs w-1/3 rounded-md bg-blue-300">Plus d'infos</button>
+                            </form>
+                        </div>
+
+                    <?php elseif (!empty($task['gravite']) && in_array($task['gravite'], ['nonUrgent', 'moyen', 'urgent'])): ?>
+
+                        <div class="task text-sm bg-red-100 border-l-4 border-red-500 rounded-md p-4 mb-4">
+                            <h3 class="text-red-600 font-semibold">Bug</h3>
+                            <p><?= htmlspecialchars($task['title'], ENT_QUOTES) ?></p>
+                            <span class="text-red-600 text-sm">Gravité : <?= $task['gravite'] ?></span>
+                            <p class="text-sm text-gray-500">Créer par : <span class="font-bold"><?= htmlspecialchars($task['creator_name'], ENT_QUOTES) ?></span></p>
+                            <p class="text-sm text-gray-500">Assignée à : <span class="font-bold"><?= htmlspecialchars($task['assignee_name'], ENT_QUOTES) ?></span></p>
+                            <span class="text-gray-500 text-sm">Date délai : <?= $task['date_fin'] ?? 'Non spécifiée' ?></span>
+                            <form action="" method="post" class="w-full h-6 flex justify-end">
+                                <input type="hidden" name="id_tache" value="<?= htmlspecialchars($task['id_task'], ENT_QUOTES) ?>">
+                                <input type="hidden" name="type_tache" value="Bug">
+                                <button name="id_tache_afficher" class="text-xs w-1/3 rounded-md bg-blue-300">Plus d'infos</button>
+                            </form>
+                        </div>
+
+                    <?php else: ?>
+
+                        <div class="task text-sm bg-blue-100 border-l-4 border-blue-500 rounded-md p-4 mb-4">
+                            <h3 class="text-blue-500 font-semibold">Tâche Générale</h3>
+                            <p><?= htmlspecialchars($task['title'], ENT_QUOTES) ?></p>
+                            <span class="text-gray-500 text-sm"><?= $task['date_fin'] ?? 'Non spécifiée' ?></span>
+                            <p class="text-sm text-gray-500">Créer par : <span class="font-bold"><?= htmlspecialchars($task['creator_name'], ENT_QUOTES) ?></span></p>
+                            <p class="text-sm text-gray-500">Assignée à : <span class="font-bold"><?= htmlspecialchars($task['assignee_name'], ENT_QUOTES) ?></span></p>
+                            <span class="text-gray-500 text-sm">Date délai : <?= $task['date_fin'] ?? 'Non spécifiée' ?></span>
+                            <form action="" method="post" class="w-full h-6 flex justify-end">
+                                <input type="hidden" name="id_tache" value="<?= htmlspecialchars($task['id_task'], ENT_QUOTES) ?>">
+                                <input type="hidden" name="type_tache" value="Tâche générale">
+                                <button name="id_tache_afficher" class="text-xs w-1/3 rounded-md bg-blue-300">Plus d'infos</button>
+                            </form>
+                        </div>
+
+                    <?php endif; ?>
 
                 <?php endif; ?>
             <?php endforeach; ?>
@@ -240,26 +295,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_tache_afficher']))
         <!-- En cours -->
         <div class="w-1/3 h-max max-sm:w-full bg-gray-200 border-none rounded-xl p-2">
             <h2 class="text-xl font-semibold text-gray-700 mb-4 pl-4">En cours</h2>
-            <?php foreach ($tasks as $tache): ?>
-                <?php if ($tache['status'] == "En cours"): ?>
-                    <div class="task text-sm bg-blue-100 border-l-4 border-blue-500 rounded-md p-4 mb-4">
-                        <h3 class="text-blue-500 font-semibold">Tâche Générale</h3>
-                        <p><?= $tache['title'] ?></p>
-                        <span class="text-gray-500 text-sm"><?= $tache['status'] ?></span>
-                        <p class="text-sm text-gray-500">Assignée à : <span class="font-bold"><?= $tache['id_user_assignee'] ?></span></p>
-                        <form action="" method="post"><input type="hidden" name="id_tache" value="<?= $tache['id_task'] ?>"><button name="id_tache_afficher" class="text-xs">plus info</button></form>
-                    </div>
+            <!-- <pre><?php print_r($tasks); ?></pre> -->
+            <?php foreach ($tasks as $task): ?>
+                <?php if ($task['status'] === "En cours"): ?>
+
+                    <?php if (!empty($task['priority']) && in_array($task['priority'], ['faible', 'moyenne', 'elevee'])): ?>
+
+                        <div class="task text-sm bg-green-100 border-l-4 border-green-500 rounded-md p-4 mb-4">
+                            <h3 class="text-green-600 font-semibold">Feature</h3>
+                            <p><?= htmlspecialchars($task['title'], ENT_QUOTES) ?></p>
+                            <span class="text-gray-500 text-sm">Priorité : <?= $task['priority'] ?></span>
+                            <p class="text-sm text-gray-500">Créer par : <span class="font-bold"><?= htmlspecialchars($task['creator_name'], ENT_QUOTES) ?></span></p>
+                            <p class="text-sm text-gray-500">Assignée à : <span class="font-bold"><?= htmlspecialchars($task['assignee_name'], ENT_QUOTES) ?></span></p>
+                            <span class="text-gray-500 text-sm">Date délai : <?= $task['date_fin'] ?? 'Non spécifiée' ?></span>
+                            <form action="" method="post" class="w-full h-6 flex justify-end">
+                                <input type="hidden" name="id_tache" value="<?= htmlspecialchars($task['id_task'], ENT_QUOTES) ?>">
+                                <input type="hidden" name="type_tache" value="Feature">
+                                <button name="id_tache_afficher" class="text-xs w-1/3 rounded-md bg-blue-300">Plus d'infos</button>
+                            </form>
+                        </div>
+
+                    <?php elseif (!empty($task['gravite']) && in_array($task['gravite'], ['nonUrgent', 'moyen', 'urgent'])): ?>
+
+                        <div class="task text-sm bg-red-100 border-l-4 border-red-500 rounded-md p-4 mb-4">
+                            <h3 class="text-red-600 font-semibold">Bug</h3>
+                            <p><?= htmlspecialchars($task['title'], ENT_QUOTES) ?></p>
+                            <span class="text-red-600 text-sm">Gravité : <?= $task['gravite'] ?></span>
+                            <p class="text-sm text-gray-500">Créer par : <span class="font-bold"><?= htmlspecialchars($task['creator_name'], ENT_QUOTES) ?></span></p>
+                            <p class="text-sm text-gray-500">Assignée à : <span class="font-bold"><?= htmlspecialchars($task['assignee_name'], ENT_QUOTES) ?></span></p>
+                            <span class="text-gray-500 text-sm">Date délai : <?= $task['date_fin'] ?? 'Non spécifiée' ?></span>
+                            <form action="" method="post" class="w-full h-6 flex justify-end">
+                                <input type="hidden" name="id_tache" value="<?= htmlspecialchars($task['id_task'], ENT_QUOTES) ?>">
+                                <input type="hidden" name="type_tache" value="Bug">
+                                <button name="id_tache_afficher" class="text-xs w-1/3 rounded-md bg-blue-300">Plus d'infos</button>
+                            </form>
+                        </div>
+
+                    <?php else: ?>
+
+                        <div class="task text-sm bg-blue-100 border-l-4 border-blue-500 rounded-md p-4 mb-4">
+                            <h3 class="text-blue-500 font-semibold">Tâche Générale</h3>
+                            <p><?= htmlspecialchars($task['title'], ENT_QUOTES) ?></p>
+                            <span class="text-gray-500 text-sm"><?= $task['date_fin'] ?? 'Non spécifiée' ?></span>
+                            <p class="text-sm text-gray-500">Créer par : <span class="font-bold"><?= htmlspecialchars($task['creator_name'], ENT_QUOTES) ?></span></p>
+                            <p class="text-sm text-gray-500">Assignée à : <span class="font-bold"><?= htmlspecialchars($task['assignee_name'], ENT_QUOTES) ?></span></p>
+                            <span class="text-gray-500 text-sm">Date délai : <?= $task['date_fin'] ?? 'Non spécifiée' ?></span>
+                            <form action="" method="post" class="w-full h-6 flex justify-end">
+                                <input type="hidden" name="id_tache" value="<?= htmlspecialchars($task['id_task'], ENT_QUOTES) ?>">
+                                <input type="hidden" name="type_tache" value="Tâche générale">
+                                <button name="id_tache_afficher" class="text-xs w-1/3 rounded-md bg-blue-300">Plus d'infos</button>
+                            </form>
+                        </div>
+
+                    <?php endif; ?>
 
                 <?php endif; ?>
             <?php endforeach; ?>
 
-            <div class="task text-sm bg-green-100 border-l-4 border-green-500 rounded-md p-4 mb-4">
-                <h3 class="text-green-600 font-semibold">Feature</h3>
-                <p>Ajouter un tableau Kanban pour gérer les tâches</p>
-                <span class="text-gray-500 text-sm">En cours</span>
-                <p class="text-sm text-gray-500">Assignée à : <span class="font-bold">Alice</span></p>
-            </div>
+
         </div>
+
+
 
         <!-- Terminé -->
         <div class="w-1/3 h-max max-sm:w-full bg-gray-200 border-none rounded-xl p-2">
@@ -267,19 +363,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_tache_afficher']))
 
             <?php foreach ($tasks as $tache): ?>
                 <?php if ($tache['status'] == "Fini"): ?>
-                    <div class="task text-sm bg-blue-100 border-l-4 border-blue-500 rounded-md p-4 mb-4">
-                        <h3 class="text-blue-500 font-semibold">Tâche Générale</h3>
-                        <p><?= $tache['title'] ?></p>
-                        <span class="text-gray-500 text-sm"><?= $tache['status'] ?></span>
-                        <p class="text-sm text-gray-500">Assignée à : <span class="font-bold"><?= $tache['id_user_assignee'] ?></span></p>
-                        <form action="" method="post"><input type="hidden" name="id_tache" value="<?= $tache['id_task'] ?>"><button name="id_tache_afficher" class="text-xs">plus info</button></form>
-                    </div>
+                    <?php if (!empty($task['priority']) && in_array($task['priority'], ['faible', 'moyenne', 'elevee'])): ?>
+
+                        <div class="task text-sm bg-green-100 border-l-4 border-green-500 rounded-md p-4 mb-4">
+                            <h3 class="text-green-600 font-semibold">Feature</h3>
+                            <p><?= htmlspecialchars($task['title'], ENT_QUOTES) ?></p>
+                            <span class="text-gray-500 text-sm">Priorité : <?= $task['priority'] ?></span>
+                            <p class="text-sm text-gray-500">Créer par : <span class="font-bold"><?= htmlspecialchars($task['creator_name'], ENT_QUOTES) ?></span></p>
+                            <p class="text-sm text-gray-500">Assignée à : <span class="font-bold"><?= htmlspecialchars($task['assignee_name'], ENT_QUOTES) ?></span></p>
+                            <span class="text-gray-500 text-sm">Date délai : <?= $task['date_fin'] ?? 'Non spécifiée' ?></span>
+                            <form action="" method="post" class="w-full h-6 flex justify-end">
+                                <input type="hidden" name="id_tache" value="<?= htmlspecialchars($task['id_task'], ENT_QUOTES) ?>">
+                                <input type="hidden" name="type_tache" value="Feature">
+                                <button name="id_tache_afficher" class="text-xs w-1/3 rounded-md bg-blue-300">Plus d'infos</button>
+                            </form>
+                        </div>
+
+                    <?php elseif (!empty($task['gravite']) && in_array($task['gravite'], ['nonUrgent', 'moyen', 'urgent'])): ?>
+
+                        <div class="task text-sm bg-red-100 border-l-4 border-red-500 rounded-md p-4 mb-4">
+                            <h3 class="text-red-600 font-semibold">Bug</h3>
+                            <p><?= htmlspecialchars($task['title'], ENT_QUOTES) ?></p>
+                            <span class="text-red-600 text-sm">Gravité : <?= $task['gravite'] ?></span>
+                            <p class="text-sm text-gray-500">Créer par : <span class="font-bold"><?= htmlspecialchars($task['creator_name'], ENT_QUOTES) ?></span></p>
+                            <p class="text-sm text-gray-500">Assignée à : <span class="font-bold"><?= htmlspecialchars($task['assignee_name'], ENT_QUOTES) ?></span></p>
+                            <span class="text-gray-500 text-sm">Date délai : <?= $task['date_fin'] ?? 'Non spécifiée' ?></span>
+                            <form action="" method="post" class="w-full h-6 flex justify-end">
+                                <input type="hidden" name="id_tache" value="<?= htmlspecialchars($task['id_task'], ENT_QUOTES) ?>">
+                                <input type="hidden" name="type_tache" value="Bug">
+                                <button name="id_tache_afficher" class="text-xs w-1/3 rounded-md bg-blue-300">Plus d'infos</button>
+                            </form>
+                        </div>
+
+                    <?php else: ?>
+
+                        <div class="task text-sm bg-blue-100 border-l-4 border-blue-500 rounded-md p-4 mb-4">
+                            <h3 class="text-blue-500 font-semibold">Tâche Générale</h3>
+                            <p><?= htmlspecialchars($task['title'], ENT_QUOTES) ?></p>
+                            <span class="text-gray-500 text-sm"><?= $task['date_fin'] ?? 'Non spécifiée' ?></span>
+                            <p class="text-sm text-gray-500">Créer par : <span class="font-bold"><?= htmlspecialchars($task['creator_name'], ENT_QUOTES) ?></span></p>
+                            <p class="text-sm text-gray-500">Assignée à : <span class="font-bold"><?= htmlspecialchars($task['assignee_name'], ENT_QUOTES) ?></span></p>
+                            <span class="text-gray-500 text-sm">Date délai : <?= $task['date_fin'] ?? 'Non spécifiée' ?></span>
+                            <form action="" method="post" class="w-full h-6 flex justify-end">
+                                <input type="hidden" name="id_tache" value="<?= htmlspecialchars($task['id_task'], ENT_QUOTES) ?>">
+                                <input type="hidden" name="type_tache" value="Tâche générale">
+                                <button name="id_tache_afficher" class="text-xs w-1/3 rounded-md bg-blue-300">Plus d'infos</button>
+                            </form>
+                        </div>
+
+                    <?php endif; ?>
 
                 <?php endif; ?>
             <?php endforeach; ?>
 
 
-            <div class="task text-sm bg-green-100 border-l-4 border-green-500 rounded-md p-4 mb-4">
+            <!-- <div class="task text-sm bg-green-100 border-l-4 border-green-500 rounded-md p-4 mb-4">
                 <h3 class="text-green-600 font-semibold">Feature</h3>
                 <p>Ajouter un tableau Kanban pour gérer les tâches</p>
                 <span class="text-gray-500 text-sm">Terminé</span>
@@ -298,12 +436,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_tache_afficher']))
                 <p>Corriger le bug d'affichage sur mobile</p>
                 <span class="text-red-600 text-sm">Priorité : Urgent</span>
                 <p class="text-sm text-gray-500">Assignée à : <span class="font-bold">Alice</span></p>
-            </div>
+            </div> -->
         </div>
 
     </section>
 
 </body>
 <script src="js/ajouterForm.js"></script>
+<script src="js/type_task.js"></script>
 
 </html>

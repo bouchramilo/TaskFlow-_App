@@ -48,7 +48,30 @@ insert into User(id_user, first_name, last_name) values (1, 'Jean', 'Dupont');
 delete from User where id_user >= 1;
 
 
+SELECT 
+                    t.*,  -- Toutes les colonnes de la table Task
+                    tf.priority, -- La priorité si c'est une feature
+                    tb.gravite  -- La gravité si c'est un bug
+                FROM Task t
+                LEFT JOIN Task_feature tf ON t.id_task = tf.id_task
+                LEFT JOIN Task_bug tb ON t.id_task = tb.id_task
+                WHERE t.id_task = 4;
 
+
+
+
+
+SELECT 
+                t.*,
+                tf.priority,
+                tb.gravite,
+                concat(uc.first_name , ' ' , uc.last_name) AS creator_name,
+                concat(ua.first_name , ' ' , ua.last_name) AS assignee_name
+            FROM Task t
+            LEFT JOIN Task_feature tf ON t.id_task = tf.id_task
+            LEFT JOIN Task_bug tb ON t.id_task = tb.id_task
+            LEFT JOIN User uc ON t.id_user_create = uc.id_user
+            LEFT JOIN User ua ON t.id_user_assignee = ua.id_user;
 
 -- les procedures : +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 delimiter $$
