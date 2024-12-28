@@ -3,6 +3,7 @@
 class User
 {
     private $pdo;
+    private $id_user;
     private $first_name;
     private $last_name;
 
@@ -11,6 +12,24 @@ class User
     {
         $this->pdo = $pdo;
     }
+
+    public function getId(){
+        return $this->id_user;
+     }
+
+     public function setid_user($id_user){
+        $this->id_user=$id_user;
+     }
+
+
+     public function getName(){
+        return $this->first_name . " " . $this->last_name;
+     }
+
+     public function setName($first_name, $last_name){
+        $this->first_name=$first_name;
+        $this->last_name=$last_name;
+     }
 
     // Valider les entrées utilisateur
     public function validateInput($first_name, $last_name)
@@ -44,9 +63,6 @@ class User
 
         if ($user) {
             $_SESSION["user_id"] = $user['id_user'];
-            $_SESSION["username"] = $user['first_name'] . " " . $user['last_name'];
-            header('Location: home.php');
-            exit;
         } else {
             $sql = "INSERT INTO user (first_name, last_name) VALUES (:first_name, :last_name)";
             $stmt = $this->pdo->prepare($sql);
@@ -55,17 +71,24 @@ class User
                 'last_name' => $last_name
             ]);
             $newUserId = $this->pdo->lastInsertId();
-
             $_SESSION["user_id"] = $newUserId;
-            $_SESSION["username"] = $first_name . " " . $last_name;
-            header('Location: home.php');
-            exit;
+
+            // exit;
         }
+        header('Location: home.php');
     }
+
+    public function getUserById(int $id): string {
+        $sql = "SELECT * FROM user WHERE id_user = :id_user";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(['id_user' => $id]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $user['first_name'].' ' .$user['last_name'];
+}
 
     public function logout(){
         unset($_SESSION["user_id"]);
-        unset($_SESSION["username"]);
+        // unset($_SESSION["username"]);
         header('Location: index.php');
     }
 

@@ -1,24 +1,26 @@
 <?php
+// use PDO ;
 class Database {
-    private $host = 'localhost';
-    private $dbname = 'TaskFlow_DB';
-    private $username = 'root';
-    private $password = 'BouchraSamar_13';
-    private $pdo;
+    private $dbname ;
+    private $host ;
+    private $username ;
+    private $password ;
+    private $pdo ;
 
-    public function connect() {
-        if ($this->pdo == null) {
-            try {
-                $this->pdo = new PDO("mysql:host={$this->host};dbname={$this->dbname};charset=utf8", $this->username, $this->password);
-                $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            } catch (PDOException $e) {
-                die("Erreur de connexion : " . $e->getMessage());
-            }
-        }
-        return $this->pdo;
+    public function __construct(string $host, string $dbname, string $username, string $password ){
+        $this->dbname = $dbname;
+        $this->host = $host;
+        $this->username = $username;
+        $this->password = $password;
+    }
+    public function getPDO(): PDO {
+            return $this->pdo ?? $this->pdo = new PDO("mysql:dbname={$this->dbname};host={$this->host}", $this->username, $this->password, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'UTF8'"
+        ]) ;
     }
 }
-
 
 session_start();
 

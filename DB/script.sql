@@ -28,14 +28,16 @@ CREATE TABLE Task (
 
 
 CREATE TABLE Task_feature (
-    id_task INT PRIMARY KEY,
+    id_feature INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    id_task INT,
     priority enum ('faible', 'moyenne', 'elevee'),
     FOREIGN KEY (id_task) REFERENCES Task(id_task) ON DELETE CASCADE
 );
 
 
 CREATE TABLE Task_bug (
-    id_task INT PRIMARY KEY,
+    id_bug INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    id_task INT,
     gravite ENUM('nonUrgent', 'moyen', 'urgent'),
     FOREIGN KEY (id_task) REFERENCES Task(id_task) ON DELETE CASCADE
 );

@@ -4,11 +4,13 @@ require_once 'classes/connect_DB.php';
 require_once 'classes/User.php';
 require_once 'classes/task.php';
 require_once 'classes/task_bug.php';
+require_once 'classes/task_feature.php';
 
 
-$db = new Database();
-$pdo = $db->connect();
+$db = new Database('localhost', 'TaskFlow_DB', 'root', 'BouchraSamar_13');
+$pdo = $db->getPDO();
 $task = new Task($pdo);
+$utilisateur = new User($pdo);
 
 $id_tache = $_SESSION['id_tache'];
 
@@ -21,8 +23,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['task_delete'])) {
 }
 
 
-
-
 //  update task ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_task'])) {
     // Récupérer et valider les données
@@ -30,19 +30,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_task'])) {
     $title = htmlspecialchars(trim($_POST['title']));
     $description = htmlspecialchars(trim($_POST['description']));
     $task_type = htmlspecialchars(trim($_POST['task_type']));
+    // $type_type = htmlspecialchars(trim($_POST['type_type']));
     $status = htmlspecialchars(trim($_POST['status']));
     $assigned_to = intval(htmlspecialchars(trim($_POST['assigned_to'])));
     $due_date = htmlspecialchars(trim($_POST['due_date']));
 
-    // Afficher les données pour débogage
-    var_dump($id_task_update, $title, $description, $task_type, $status, $assigned_to, $due_date);
+    // // Afficher les données pour débogage
+    // var_dump($id_task_update, $title, $description, $task_type, $status, $assigned_to, $due_date);
 
-    if ($task->updateTask($id_task_update, $title, $description, $task_type, $status, $assigned_to, $due_date)) {
-        echo "Tâche mise à jour avec succès.";
-        header('Location: details_task.php');
+    // if ($task->updateTask($id_task_update, $title, $description, $task_type, $type_type, $status, $assigned_to, $due_date)) {
+    //     header('Location: details_task.php');
+    // } else {
+    //     echo "Erreur lors de la mise à jour de la tâche.";
+    // }
+
+
+
+
+    if ($task_type === "bug") {
+        $gravite = htmlspecialchars(trim($_POST['gravite']));
+        if ($task->updateTask($id_task_update, $title, $description, $task_type, $gravite, $status, $assigned_to, $due_date)) {
+            header('Location: details_task.php');
+            // echo "Bug ajouté avec succès !";
+        } else {
+            echo "Erreur lors de l'update du bug.";
+        }
+    } elseif ($task_type === "feature") {
+        $priority = htmlspecialchars(trim($_POST['priority']));
+        if ($task->updateTask($id_task_update, $title, $description, $task_type, $priority, $status, $assigned_to, $due_date)) {
+            header('Location: details_task.php');
+            // echo "Feature ajoutée avec succès !";
+        } else {
+            echo "Erreur lors de l'update de la feature.";
+        }
     } else {
-        echo "Erreur lors de la mise à jour de la tâche.";
+        $task->updateTask($id_task_update, $title, $description, $task_type, '', $status, $assigned_to, $due_date);
+        // echo "task ajouter avec succes";
     }
+}
+
+// logout ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
+    $user = $utilisateur->logout();
 }
 
 
@@ -62,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_task'])) {
     <title>TaskFlow - Home</title>
 </head>
 
-<body class="w-full flex-col justify-center items-center pt-5 gap-2 ">
+<body class="w-full flex-col justify-center items-center pt-0 gap-2 ">
 
 
 
@@ -78,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_task'])) {
                     <!-- Titre -->
                     <div>
                         <label for="title" class="font-medium text-gray-700">Titre</label>
-                        <input type="text" id="title" name="title" value="<?= $tache['title'];?>"
+                        <input type="text" id="title" name="title" value="<?= $tache['title']; ?>"
                             class=" block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
 
@@ -86,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_task'])) {
                     <div>
                         <label for="description" class="font-medium text-gray-700">Description</label>
                         <textarea id="description" name="description" rows="4" class=" block w-full px-4 py-2 resize-none h-16 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <?= trim($tache['description']);?>
+                            <?= trim($tache['description']); ?>
                         </textarea>
                     </div>
 
@@ -136,8 +165,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_task'])) {
 
                     <?php
                     // Afficher tous les utilisateurs
-                    $userManager = new User($pdo);
-                    $users = $userManager->getAllUsers();
+                    $utilisateur = new User($pdo);
+                    $users = $utilisateur->getAllUsers();
                     ?>
 
                     <!-- Assigné à -->
@@ -154,7 +183,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_task'])) {
                         <!-- Date de Délai -->
                         <div class="w-1/2 max-sm:w-full">
                             <label for="due_date" class="font-medium text-gray-700">Date de Délai</label>
-                            <input type="date" id="due_date" name="due_date" value="<?= $tache['date_fin']; ?>"
+                            <input type="date" id="due_date" name="due_date" value="2025-01-01"
                                 class=" block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                     </div>
@@ -175,8 +204,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_task'])) {
         </section>
     </div>
 
+    <section class="w-full h-max flex flex-row justify-end max-sm:flex-col gap-2 px-6 mt-0 py-2 bg-[#77b7ec]">
+
+        <div class="w-full flex justify-start ">
+            <h1 class="text-3xl font-bold text-center text-blue-600">TaskFlow</h1>
+        </div>
+        <div class="w-full flex justify-end gap-2 ">
+            <div class="w-max bg-green-500 text-white font-medium py-2 px-4 rounded-full hover:bg-green-600 transition">
+                <!-- <p><?php echo $_SESSION["username"] ?></p> -->
+                <p><?php echo $utilisateur->getUserById($_SESSION["user_id"]); ?></p>
+            </div>
+            <!-- Logout Form -->
+            <form action="" method="post" class="w-max flex items-center">
+                <input type="hidden" name="id_user">
+                <button name="logout" class="bg-red-500 text-white font-medium py-2 px-4 rounded hover:bg-red-600 transition">
+                    Logout
+                </button>
+            </form>
+        </div>
+    </section>
+
     <a href="home.php"
-        class="absolute top-1 left-1 inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-lg border-2 py-2 px-4 border-blue-500 rounded-lg">
+        class="relative top-1 left-1 inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-lg border-2 py-2 px-4 border-blue-500 rounded-lg">
         &#10092;&#10092;
     </a>
 

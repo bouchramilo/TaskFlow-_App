@@ -2,18 +2,18 @@
 require_once 'classes/connect_DB.php';
 require_once 'classes/User.php';
 
-$db = new Database();
-$pdo = $db->connect();
+$db = new Database('localhost', 'TaskFlow_DB', 'root', 'BouchraSamar_13');
+$pdo = $db->getPDO();
 
-$userManager = new User($pdo);
+$utilisateur = new User($pdo);
 
 // récupération de données du formulaire
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['first_name'], $_POST['last_name'])) {
     $first_name = htmlspecialchars(trim($_POST['first_name']));
     $last_name = htmlspecialchars(trim($_POST['last_name']));
 
-    // if ($userManager->validateInput($first_name, $last_name)) {
-    $user = $userManager->loginOrCreateUser($first_name, $last_name);
+    // if ($utilisateur->validateInput($first_name, $last_name)) {
+    $user = $utilisateur->loginOrCreateUser($first_name, $last_name);
     // }
 }
 
@@ -22,8 +22,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['first_name'], $_POST[
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_user'])) {
     $id_user_delete = htmlspecialchars(trim($_POST['id_user_delete']));
 
-    // if ($userManager->validateInput($first_name, $last_name)) {
-    $user = $userManager->deleteUser($id_user_delete);
+    // if ($utilisateur->validateInput($first_name, $last_name)) {
+    $user = $utilisateur->deleteUser($id_user_delete);
     // }
 }
 
@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_user'])) {
 
     <?php
     // Afficher tous les utilisateurs
-    $users = $userManager->getAllUsers();
+    $users = $utilisateur->getAllUsers();
     ?>
 
     <div class="users-list w-3/4 bg-white p-6 rounded-lg shadow-md">
